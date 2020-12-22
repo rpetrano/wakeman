@@ -66,7 +66,7 @@ cairo_surface_t *load_background_video(const char *path) {
 	struct SwsContext *sws_ctx = sws_getContext(
 		pCodecCtx->width,
 		pCodecCtx->height,
-		pCodecCtx->pix_format,
+		pCodecCtx->pix_fmt,
 		pCodecCtx->width,
 		pCodecCtx->height,
 		AV_PIX_FMT_ARGB,
