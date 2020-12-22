@@ -100,10 +100,11 @@ cairo_surface_t *load_background_video(const char *path) {
 					pFrameRGB->linesize
 				);
 				printf("%d\n", x);
+				printf("%d\n", linesize);
 				int stride = cairo_format_stride_for_width(
 						CAIRO_FORMAT_RGB24, pFrameRGB->width);
 				image = cairo_image_surface_create_for_data(
-					(unsigned char *) pFrameRGB->data[0],
+					pFrameRGB->data[0],
 					CAIRO_FORMAT_RGB24,
 					pFrameRGB->width,
 					pFrameRGB->height,
@@ -120,8 +121,6 @@ cairo_surface_t *load_background_video(const char *path) {
 	av_free(pFrame);
 	avcodec_close(pCodecCtx);
 	avformat_close_input(&pFormatCtx);
-
-	wakeman_log(LOG_ERROR, "testkovic");
 
 	if (!image) {
 		wakeman_log(LOG_ERROR, "Failed to process video.");
