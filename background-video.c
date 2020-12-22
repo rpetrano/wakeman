@@ -95,13 +95,14 @@ cairo_surface_t *load_background_video(const char *path) {
 			while (avcodec_receive_frame(pCodecCtx, pFrame) == 0) {
 				int x = sws_scale(
 					sws_ctx,
-					pFrame->data,
+					(const uint8_t * const *) pFrame->data,
 					pFrame->linesize,
 					0,
 					pFrame->height,
 					pFrameRGB->data,
 					pFrameRGB->linesize
 				);
+				printf("%d\n", x);
 				int stride = cairo_format_stride_for_width(
 						CAIRO_FORMAT_RGB24, pFrameRGB->width);
 				image = cairo_image_surface_create_for_data(
