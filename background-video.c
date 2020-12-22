@@ -7,11 +7,6 @@
 #include "log.h"
 #include "cairo.h"
 
-/*
-void pixmap_destroy_notify(guchar *pixels, gpointer data) {
-    printf("Destroy pixmap - not sure how\n");
-}
-
 cairo_surface_t *get_image(AVFrame *frame) {
 	cairo_surface_t *image;
 
@@ -19,7 +14,7 @@ cairo_surface_t *get_image(AVFrame *frame) {
 	GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(
 		frame->data[0], GDK_COLORSPACE_RGB,
 		0, 8, frame->width, frame->height, 
-		frame->linesize[0], pixmap_destroy_notify,
+		frame->linesize[0], NULL,
 		NULL
 	);
 	if (!pixbuf) {
@@ -31,17 +26,6 @@ cairo_surface_t *get_image(AVFrame *frame) {
 	g_object_unref(pixbuf);
 
 	return image;
-}
-*/
-
-cairo_surface_t *get_image(AVFrame *frame) {
-	return cairo_image_surface_create_for_data(
-		frame->data[0],
-		CAIRO_FORMAT_RGB24,
-		frame->width,
-		frame->height,
-		frame->linesize[0]
-	);
 }
 
 cairo_surface_t *load_background_video(const char *path) {
@@ -105,7 +89,7 @@ cairo_surface_t *load_background_video(const char *path) {
 		pCodecCtx->pix_fmt,
 		pCodecCtx->width,
 		pCodecCtx->height,
-		AV_PIX_FMT_ARGB,
+		AV_PIX_FMT_RGB24,
 		SWS_BILINEAR,
 		NULL,
 		NULL,
@@ -117,7 +101,7 @@ cairo_surface_t *load_background_video(const char *path) {
 		pFrameRGB->linesize,
 		pCodecCtx->width,
 		pCodecCtx->height,
-		AV_PIX_FMT_ARGB,
+		AV_PIX_FMT_RGB24,
 		1
 	) < 0) {
 		wakeman_log(LOG_ERROR, "Can't allocate image.");
@@ -132,7 +116,7 @@ cairo_surface_t *load_background_video(const char *path) {
 		if (packet.stream_index == videoStream) {
 			avcodec_send_packet(pCodecCtx, &packet);
 			while (avcodec_receive_frame(pCodecCtx, pFrame) == 0) {
-				int x = sws_scale(
+				sws_scale(
 					sws_ctx,
 					(const uint8_t * const *) pFrame->data,
 					pFrame->linesize,
@@ -141,7 +125,6 @@ cairo_surface_t *load_background_video(const char *path) {
 					pFrameRGB->data,
 					pFrameRGB->linesize
 				);
-				printf("%d\n", x);
 
 				image = get_image(pFrameRGB);
 			}
