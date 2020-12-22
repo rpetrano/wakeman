@@ -66,7 +66,7 @@ cairo_surface_t *load_background_video(const char *path) {
 	struct SwsContext *sws_ctx = sws_getContext(
 		pCodecCtx->width,
 		pCodecCtx->height,
-		pCodecPar->format,
+		pCodecCtx->pix_format,
 		pCodecCtx->width,
 		pCodecCtx->height,
 		AV_PIX_FMT_ARGB,
@@ -102,6 +102,7 @@ cairo_surface_t *load_background_video(const char *path) {
 				);
 				int stride = cairo_format_stride_for_width(
 						CAIRO_FORMAT_RGB24, pFrameRGB->width);
+				printf("%d\n", stride);
 				image = cairo_image_surface_create_for_data(
 					(unsigned char *) pFrameRGB->data,
 					CAIRO_FORMAT_RGB24,
@@ -120,6 +121,8 @@ cairo_surface_t *load_background_video(const char *path) {
 	av_free(pFrame);
 	avcodec_close(pCodecCtx);
 	avformat_close_input(&pFormatCtx);
+
+	wakeman_log(LOG_ERROR, "testkovic");
 
 	if (!image) {
 		wakeman_log(LOG_ERROR, "Failed to process video.");
