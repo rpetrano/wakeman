@@ -73,18 +73,17 @@ cairo_surface_t *load_background_video(const char *path) {
 		NULL
 	);
 
-	int numBytes = av_image_get_buffer_size(AV_PIX_FMT_ARGB, pCodecCtx->width, pCodecCtx->height, 4);
-	uint8_t *buffer = (uint8_t *) av_malloc(numBytes*sizeof(uint8_t));
-
-	av_image_fill_arrays(
+	if (av_image_alloc(
 		pFrameRGB->data,
 		pFrameRGB->linesize,
-		buffer,
-		AV_PIX_FMT_ARGB,
 		pCodecCtx->width,
 		pCodecCtx->height,
-		4
-	); // try 32, 16 for SMD
+		AV_PIX_FMT_ARGB,
+		1
+	) < 0) {
+		wakeman_log(LOG_ERROR, "Can't allocate image.");
+		return NULL;
+	}
 
 	AVPacket packet;
 	while (av_read_frame(pFormatCtx, &packet) >= 0) {
@@ -116,7 +115,7 @@ cairo_surface_t *load_background_video(const char *path) {
 		break;
 	}
 
-	av_free(buffer);
+	av_freep(&pFrameRGB->data[0]);
 	av_free(pFrameRGB);
 	av_free(pFrame);
 	avcodec_close(pCodecCtx);
