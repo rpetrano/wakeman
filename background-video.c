@@ -103,12 +103,14 @@ cairo_surface_t *load_background_video(const char *path) {
 					pFrameRGB->linesize
 				);
 				printf("%d\n", x);
-				printf("%d\n", linesize);
-				int stride = cairo_format_stride_for_width(
+				printf("%d\n", pFrameRGB->linesize[0]);
+				/*int stride = cairo_format_stride_for_width(
 						CAIRO_FORMAT_RGB24, pFrameRGB->width);
+						*/
+				int stride = 4*pFrameRGB->width;
 				image = cairo_image_surface_create_for_data(
 					pFrameRGB->data[0],
-					CAIRO_FORMAT_RGB24,
+					CAIRO_FORMAT_ARGB32,
 					pFrameRGB->width,
 					pFrameRGB->height,
 					stride
