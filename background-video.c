@@ -1,9 +1,36 @@
+#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 #include <libavutil/imgutils.h>
 #include <cairo.h>
 #include "log.h"
+#include "cairo.h"
+
+void pixmap_destroy_notify(guchar *pixels, gpointer data) {
+    printf("Destroy pixmap - not sure how\n");
+}
+
+cairo_surface_t *get_image(AVFrame *frame) {
+	cairo_surface_t *image;
+
+	GError *err = NULL;
+	GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(
+		frame->data[0], GDK_COLORSPACE_RGB,
+		0, 8, frame->width, frame->height, 
+		frame->linesize[0], pixmap_destroy_notify,
+		NULL
+	);
+	if (!pixbuf) {
+		wakeman_log(LOG_ERROR, "Failed to load background image (%s).",
+		err->message);
+		return NULL;
+	}
+	image = gdk_cairo_image_surface_create_from_pixbuf(pixbuf);
+	g_object_unref(pixbuf);
+
+	return image;
+}
 
 cairo_surface_t *load_background_video(const char *path) {
 	cairo_surface_t *image;
@@ -66,7 +93,7 @@ cairo_surface_t *load_background_video(const char *path) {
 		pCodecCtx->pix_fmt,
 		pCodecCtx->width,
 		pCodecCtx->height,
-		AV_PIX_FMT_ARGB,
+		AV_PIX_FMT_RGB24,
 		SWS_BILINEAR,
 		NULL,
 		NULL,
@@ -78,7 +105,7 @@ cairo_surface_t *load_background_video(const char *path) {
 		pFrameRGB->linesize,
 		pCodecCtx->width,
 		pCodecCtx->height,
-		AV_PIX_FMT_ARGB,
+		AV_PIX_FMT_RGB24,
 		1
 	) < 0) {
 		wakeman_log(LOG_ERROR, "Can't allocate image.");
@@ -103,18 +130,8 @@ cairo_surface_t *load_background_video(const char *path) {
 					pFrameRGB->linesize
 				);
 				printf("%d\n", x);
-				printf("%d\n", pFrameRGB->linesize[0]);
-				/*int stride = cairo_format_stride_for_width(
-						CAIRO_FORMAT_RGB24, pFrameRGB->width);
-						*/
-				int stride = 4*pFrameRGB->width;
-				image = cairo_image_surface_create_for_data(
-					pFrameRGB->data[0],
-					CAIRO_FORMAT_ARGB32,
-					pFrameRGB->width,
-					pFrameRGB->height,
-					stride
-				);
+
+				image = get_image(pFrameRGB);
 			}
 		}
 		av_packet_unref(&packet);
