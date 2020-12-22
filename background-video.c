@@ -76,6 +76,7 @@ cairo_surface_t *load_background_video(const char *path) {
 		NULL
 	);
 
+	/*
 	av_image_fill_arrays(
 		pFrameRGB->data,
 		pFrameRGB->linesize,
@@ -85,24 +86,24 @@ cairo_surface_t *load_background_video(const char *path) {
 		pCodecCtx->height,
 		1
 	); // try 32, 16 for SMD
+	*/
 
 	AVPacket packet;
 	while (av_read_frame(pFormatCtx, &packet) >= 0) {
 		if (packet.stream_index == videoStream) {
 			avcodec_send_packet(pCodecCtx, &packet);
 			while (avcodec_receive_frame(pCodecCtx, pFrame) == 0) {
-				sws_scale(
+				int x = sws_scale(
 					sws_ctx,
-					(uint8_t const * const *) pFrame->data,
+					pFrame->data,
 					pFrame->linesize,
 					0,
-					pCodecCtx->height,
+					pFrame->height,
 					pFrameRGB->data,
 					pFrameRGB->linesize
 				);
 				int stride = cairo_format_stride_for_width(
 						CAIRO_FORMAT_RGB24, pFrameRGB->width);
-				printf("%d\n", stride);
 				image = cairo_image_surface_create_for_data(
 					(unsigned char *) pFrameRGB->data,
 					CAIRO_FORMAT_RGB24,
