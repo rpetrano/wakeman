@@ -60,9 +60,6 @@ cairo_surface_t *load_background_video(const char *path) {
 		return NULL;
 	}
 
-	int numBytes = av_image_get_buffer_size(AV_PIX_FMT_ARGB, pCodecCtx->width, pCodecCtx->height, 1); // try 32, 16 for SMD
-	uint8_t *buffer = (uint8_t *) av_malloc(numBytes*sizeof(uint8_t));
-
 	struct SwsContext *sws_ctx = sws_getContext(
 		pCodecCtx->width,
 		pCodecCtx->height,
@@ -76,7 +73,9 @@ cairo_surface_t *load_background_video(const char *path) {
 		NULL
 	);
 
-	/*
+	int numBytes = av_image_get_buffer_size(AV_PIX_FMT_ARGB, pCodecCtx->width, pCodecCtx->height, 4);
+	uint8_t *buffer = (uint8_t *) av_malloc(numBytes*sizeof(uint8_t));
+
 	av_image_fill_arrays(
 		pFrameRGB->data,
 		pFrameRGB->linesize,
@@ -84,9 +83,8 @@ cairo_surface_t *load_background_video(const char *path) {
 		AV_PIX_FMT_ARGB,
 		pCodecCtx->width,
 		pCodecCtx->height,
-		1
+		4
 	); // try 32, 16 for SMD
-	*/
 
 	AVPacket packet;
 	while (av_read_frame(pFormatCtx, &packet) >= 0) {
