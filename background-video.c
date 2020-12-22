@@ -85,6 +85,9 @@ cairo_surface_t *load_background_video(const char *path) {
 		return NULL;
 	}
 
+    pFrameRGB->width = pCodecCtx->width;
+    pFrameRGB->height = pCodecCtx->height;
+
 	AVPacket packet;
 	while (av_read_frame(pFormatCtx, &packet) >= 0) {
 		if (packet.stream_index == videoStream) {
@@ -115,7 +118,7 @@ cairo_surface_t *load_background_video(const char *path) {
 		break;
 	}
 
-	av_freep(&pFrameRGB->data[0]);
+	av_freep(pFrameRGB->data);
 	av_free(pFrameRGB);
 	av_free(pFrame);
 	avcodec_close(pCodecCtx);
