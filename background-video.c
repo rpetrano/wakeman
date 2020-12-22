@@ -7,6 +7,7 @@
 #include "log.h"
 #include "cairo.h"
 
+/*
 void pixmap_destroy_notify(guchar *pixels, gpointer data) {
     printf("Destroy pixmap - not sure how\n");
 }
@@ -30,6 +31,17 @@ cairo_surface_t *get_image(AVFrame *frame) {
 	g_object_unref(pixbuf);
 
 	return image;
+}
+*/
+
+cairo_surface_t *get_image(AVFrame *frame) {
+	return cairo_image_surface_create_for_data(
+		frame->data[0],
+		CAIRO_FORMAT_RGB24,
+		frame->width,
+		frame->height,
+		frame->linesize[0]
+	);
 }
 
 cairo_surface_t *load_background_video(const char *path) {
@@ -93,7 +105,7 @@ cairo_surface_t *load_background_video(const char *path) {
 		pCodecCtx->pix_fmt,
 		pCodecCtx->width,
 		pCodecCtx->height,
-		AV_PIX_FMT_RGB24,
+		AV_PIX_FMT_ARGB,
 		SWS_BILINEAR,
 		NULL,
 		NULL,
@@ -105,7 +117,7 @@ cairo_surface_t *load_background_video(const char *path) {
 		pFrameRGB->linesize,
 		pCodecCtx->width,
 		pCodecCtx->height,
-		AV_PIX_FMT_RGB24,
+		AV_PIX_FMT_ARGB,
 		1
 	) < 0) {
 		wakeman_log(LOG_ERROR, "Can't allocate image.");
